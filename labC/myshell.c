@@ -26,14 +26,15 @@ typedef struct process
 
 process *process_list = NULL;
 
-//--------------------------------------------//creating a queue
+//--------------------------------------------//
+
 #define HISTLEN 20
-
 char *history [HISTLEN];
-
 int newest = 0; // newest indicates the "index of the newest" item in queue (newest-1 in the array)
 int oldest = 0; // oldest indicates the "index of the oldest" item in queue (oldest-1 in the array)
-// -------------------------------------------------------------------------------------------------------------- //
+
+//--------------------------------------------//
+
 void addToHistory(char *cl)
 {
     char *replace = malloc(strlen(cl) );
@@ -47,12 +48,16 @@ void addToHistory(char *cl)
     history[newest] = replace;
     newest = (newest + 1) % HISTLEN;
 }
-// -------------------------------------------------------------------------------------------------------------- //
+
+//--------------------------------------------//
+
 int sizeOfHistory()
 {
     return ( newest- oldest + HISTLEN) % HISTLEN + 1;
 }
-// -------------------------------------------------------------------------------------------------------------- //
+
+//--------------------------------------------//
+
 char* getHistoryByIndex(int n)
 {
     int index = (oldest + n - 1) % HISTLEN;
@@ -63,13 +68,17 @@ char* getHistoryByIndex(int n)
     }
     return history[index];
 }
-// -------------------------------------------------------------------------------------------------------------- //
+
+//--------------------------------------------//
+
 void deleteFromHistory()
 {
     free(history[oldest]);
     oldest = (oldest - 1) % HISTLEN;
 }
-// -------------------------------------------------------------------------------------------------------------- //
+
+//--------------------------------------------//
+
 void freeHistory()
 {
     for (int i = 0; i < HISTLEN; i++)
@@ -80,20 +89,23 @@ void freeHistory()
         }
     } 
 }
-// -------------------------------------------------------------------------------------------------------------- //
+
+//--------------------------------------------//
+
 void freeProcessList(process *process_list)
 {
     process *p = process_list;
     while (process_list != NULL)
     {
         process_list = process_list->next;
-
         freeCmdLines(p->cmd);
         free(p);
         p = process_list;
     }
 }
-// -------------------------------------------------------------------------------------------------------------- //
+
+//--------------------------------------------//
+
 void updateProcessStatus(process *process_list, int pid, int status)
 {
     process *p = process_list;
@@ -108,7 +120,9 @@ void updateProcessStatus(process *process_list, int pid, int status)
         p->status = status;
     }
 }
-// -------------------------------------------------------------------------------------------------------------- //
+
+//--------------------------------------------//
+
 void updateProcessList(process **process_list)
 {
   process* p = *process_list;
@@ -135,33 +149,32 @@ void updateProcessList(process **process_list)
             {
                 p->status=SUSPENDED;
             }
-        }
-    
+        }  
         p = p->next;
     }
 }
-// -------------------------------------------------------------------------------------------------------------- //
+
+//--------------------------------------------//
+
 void addProcess(process **process_list, cmdLine *cmd, pid_t pid)
 {
     process *p = malloc(sizeof(process));
-
     p->cmd = cmd;
     p->next = *process_list;
     p->pid = pid;
     p->status = RUNNING;
-
     *process_list = p;
 }
-// -------------------------------------------------------------------------------------------------------------- //
+
+//--------------------------------------------//
+
 void printProcessList(process **process_list)
 {
     updateProcessList(process_list);
-
     process *current = *process_list;
     process *previous = NULL;
     process *remove = NULL;
     int index = 1;
-
     printf("Index     PID     Status     Command\n");
     while (current != NULL)
     {
@@ -179,6 +192,7 @@ void printProcessList(process **process_list)
         {
             statusN = "RUNNING";
         }
+        
         printf("%d     %d     %s     %s ", index, current->pid, statusN, current->cmd->arguments[0]); // status
 
         for (int i = 1; i < current->cmd->argCount; i++)
@@ -202,6 +216,7 @@ void printProcessList(process **process_list)
                 current = current->next;
                 *process_list = current;
             }
+            
             freeCmdLines(remove->cmd);
             free(remove);
         }
@@ -213,19 +228,23 @@ void printProcessList(process **process_list)
         index++;
     }
 }
-// -------------------------------------------------------------------------------------------------------------- //
+
+//--------------------------------------------//
+
 int pipeline(cmdLine *pCmdLine)
 {
     int *sta = NULL;
-
     int fd[2];
+    
     if (pipe(fd) == -1) // creates a pipe and sets fd[0] as the read end and fd[1] as the write end
     {
         perror("the pipe operation fails\n");
         _exit(1);
     }
+    
     fprintf(stderr, "parent_process > forking child1\n");
     int child1 = fork();
+    
     if (child1 == 0)
     {
         fprintf(stderr, "child1>redirecting stdout to the write end of the pipe…\n");
@@ -235,6 +254,7 @@ int pipeline(cmdLine *pCmdLine)
         if (pCmdLine->inputRedirect != NULL)
         {
             close(0);
+            
             if (open(pCmdLine->inputRedirect, O_RDWR | O_CREAT, 0777) == -1)
             {
                 perror("the open operation fails");
@@ -245,6 +265,7 @@ int pipeline(cmdLine *pCmdLine)
         if (pCmdLine->outputRedirect != NULL)
         {
             close(1);
+            
             if (open(pCmdLine->outputRedirect, O_RDWR | O_CREAT, 0777) == -1)
             {
                 perror("the open operation fails");
@@ -252,12 +273,15 @@ int pipeline(cmdLine *pCmdLine)
                 _exit(1);
             }
         }
+        
         close(fd[1]);
         fprintf(stderr, "child1 > going to execute cmd:");
+        
         for (int i = 1; i < pCmdLine->argCount; i++)
         {
             printf(" %s", pCmdLine->arguments[i]);
         }
+        
         execvp( pCmdLine->arguments[0], pCmdLine->arguments);
         _exit(1); // error
     }
@@ -269,6 +293,7 @@ int pipeline(cmdLine *pCmdLine)
         pCmdLine = pCmdLine->next;
         fprintf(stderr, "parent_process > forking child2\n");
         int child2 = fork();
+        
         if (child2 == 0)
         {
             close(0);
@@ -279,6 +304,7 @@ int pipeline(cmdLine *pCmdLine)
             if (pCmdLine->inputRedirect != NULL)
             {
                 close(0);
+                
                 if (open(pCmdLine->inputRedirect, O_RDWR | O_CREAT, 0777) == -1)
                 {
                     perror("the open operation fails");
@@ -289,6 +315,7 @@ int pipeline(cmdLine *pCmdLine)
             if (pCmdLine->outputRedirect != NULL)
             {
                 close(1);
+                
                 if (open(pCmdLine->outputRedirect, O_RDWR, 0777) == -1)
                 {
                     perror("the open operation fails");
@@ -296,17 +323,19 @@ int pipeline(cmdLine *pCmdLine)
                     _exit(1);
                 }
             }
+            
             fprintf(stderr, "child1 > going to execute cmd:");
+            
             for (int i = 1; i < pCmdLine->argCount; i++)
             {
                 printf(" %s", pCmdLine->arguments[i]);
             }
+            
             execvp( pCmdLine->arguments[0],  pCmdLine->arguments);
             _exit(1);
         }
         else if (child2 > 0)
         {
-
             fprintf(stderr, "%s%i\n", "parent_process > created process with id: ", child2);
             close(fd[0]);
             fprintf(stderr, "parent_process>closing the read end of the pipe…\n");
@@ -314,14 +343,14 @@ int pipeline(cmdLine *pCmdLine)
             waitpid(child1, sta, 0);
             fprintf(stderr, "parent_process > waiting for child processes to terminate\n");
             waitpid(child2, sta, 0);
-
             fprintf(stderr, "parent_process > exiting\n");
         }
     }
-
     return 0;
 }
-// -------------------------------------------------------------------------------------------------------------- //
+
+//--------------------------------------------//
+
 void execute(cmdLine *pCmdLine)
 {
     if (strcmp(pCmdLine->arguments[0], "quit") == 0)
@@ -477,7 +506,7 @@ void execute(cmdLine *pCmdLine)
     }
 }
 
-// -------------------------------------------------------------------------------------------------------------- //
+//--------------------------------------------//
 
 int main(int argc, char **argv)
 {
