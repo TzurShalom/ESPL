@@ -7,7 +7,6 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 
-
 //global var
 
 int debug_mode = 0;
@@ -51,6 +50,7 @@ void SaveNumSymbols1()
     Elf32_Shdr * section_header = (Elf32_Shdr *)(mapped_fileNum1 + headerNum1->e_shoff);
     int i;
     numSymbolsNum1=0;
+    
     for(i = 0; i < headerNum1->e_shnum; i++)
     { 
         if(section_header[i].sh_type == SHT_SYMTAB)
@@ -65,24 +65,26 @@ void SaveNumSymbols2()
     Elf32_Shdr * section_header = (Elf32_Shdr *)(mapped_fileNum2 + headerNum2->e_shoff);
     int i;
     numSymbolsNum2=0;
+    
     for(i = 0; i < headerNum2->e_shnum; i++)
     {  
         if(section_header[i].sh_type == SHT_SYMTAB)
         { 
             numSymbolsNum2 = section_header[i].sh_size / section_header[i].sh_entsize;
         }
-
     }
 }
 
 void OpenAndMap1(char fileName[] )
 {
     fdNum1 = open(fileName, O_RDWR);
+    
     if (fdNum1 == -1) 
     {
         printf("OpenAndMap:Error opening the file: %s\n", fileName);
         return;
     }
+    
     //The fstat function usually takes a file descriptor as an argument and fills a structure with the file's information. 
     if (fstat(fdNum1, &stNum1) == -1) 
     {
@@ -91,8 +93,10 @@ void OpenAndMap1(char fileName[] )
         fdNum1 = -1;
         return;
     }
+    
     //The mmap function typically takes parameters such as the file descriptor of the file to be mapped
     mapped_fileNum1 = mmap(NULL, stNum1.st_size, PROT_READ, MAP_PRIVATE, fdNum1, 0);
+    
     if (mapped_fileNum1 == MAP_FAILED) 
     {
         printf("Error mapping the file into memory.\n");
@@ -123,6 +127,7 @@ void OpenAndMap2(char fileName[] )
         printf("OpenAndMap:Error opening the file: %s\n", fileName);
         return;
     }
+    
     //The fstat function usually takes a file descriptor as an argument and fills a structure with the file's information. 
     if (fstat(fdNum2, &stNum2) == -1) 
     {
@@ -140,6 +145,7 @@ void OpenAndMap2(char fileName[] )
         fdNum2 = -1;
         return;
     }
+    
     headerNum2 = (Elf32_Ehdr*) mapped_fileNum2;
     
     // Print the required information from the ELF header
@@ -156,7 +162,6 @@ void OpenAndMap2(char fileName[] )
 
 void ExamineELFFile()
 {
-
     printf("Enter the ELF file name:  ");
     char buff[100];
     char filename[100];
@@ -222,12 +227,13 @@ void printSection(void *map_start,Elf32_Ehdr *elf_header)
     printf("Section headers:\n");
     printf("[index] nameSection  section_address section_offset section_size  section_type\n");
     int i;
+    
     for (i = 0; i <num_sections; i++)
     {
         char *name = shstrtab + section_header[i].sh_name;
         char* sectionType = getSectionHeaderType(section_header[i].sh_type);
         printf("[%d] %s, %x, %x, %d, %s\n", i, name, section_header[i].sh_addr, section_header[i].sh_offset,
-            section_header[i].sh_size, sectionType);
+        section_header[i].sh_size, sectionType);
     }
 }
 
@@ -258,6 +264,7 @@ void PrintSymbolsHelper(void *map_start,Elf32_Ehdr *elf_header, int numSymbols)
     char * symbolStringTable = NULL;
     char *stringTableOfHeader = (char *)(map_start + section_header[elf_header->e_shstrndx].sh_offset);
     int k, j,i;
+    
     for(i = 0; i < elf_header->e_shnum; i++)
     {
         if(strcmp(stringTableOfHeader + section_header[i].sh_name, ".strtab") == 0)
@@ -275,17 +282,18 @@ void PrintSymbolsHelper(void *map_start,Elf32_Ehdr *elf_header, int numSymbols)
             numberOfSymbolsForDYNSYM = section_header[i].sh_size / section_header[i].sh_entsize;
         }
     }
+    
     if (debug_mode)
     {
         printf("Size OF DYNSYM Symbol: %d \n",numberOfSymbolsForDYNSYM);
         printf("Size OF SYMTAB Symbol: %d ",numberOfSymbolsForSYMTAB);
     }
+    
     printf("\n");   
     printf("[index]   value   section_index     section_name     symbol_name\n");
     
     for(j = 0; j < numberOfSymbolsForDYNSYM; j++)
     {
-
         char *symbolName = "";
         if(symbolTableForDYNSYM[j].st_info != STT_SECTION)
         {
@@ -312,6 +320,7 @@ void PrintSymbolsHelper(void *map_start,Elf32_Ehdr *elf_header, int numSymbols)
     }
 
     printf("[index]   value   section_index     section_name     symbol_name\n");
+    
     for(k = 0; k < numberOfSymbolsForSYMTAB; k++)
     {
         int index = symbolTableForSYMTAB[k].st_shndx; 
@@ -338,7 +347,6 @@ void PrintSymbolsHelper(void *map_start,Elf32_Ehdr *elf_header, int numSymbols)
         
         printf("%2d      %08x       %5d    %15s    %s   \n", i, symbolTableForSYMTAB[k].st_value, index, nameSection, symbolName);
     }
-
 }
 
 void PrintSymbols(){
@@ -357,12 +365,14 @@ void PrintSymbols(){
     }
 }
 
-void CheckFilesForMerge(){
+void CheckFilesForMerge()
+{
     if (fdNum1 == -1 || fdNum2 == -1 ) 
     {
         printf("CheckFilesForMerge :there are no 2 ELF files.\n");
         return;
     } 
+    
     int i;
     Elf32_Shdr *sectionHeaderStringTableNum1 = (Elf32_Shdr *)((char *)mapped_fileNum1 + headerNum1->e_shoff + (headerNum1->e_shstrndx * sizeof(Elf32_Shdr)));
     Elf32_Shdr *symbolTableNum1 = NULL;
@@ -393,11 +403,13 @@ void CheckFilesForMerge(){
     }
 
     Elf32_Sym *syms = (Elf32_Sym*)(mapped_fileNum1 + symbolTableNum1->sh_offset);
+    
     for (int i = 1; i < symbolTableNum1->sh_size / sizeof(Elf32_Sym); i++) 
     {
         Elf32_Sym *sym = &syms[i];
         char *symbol_name1 = (char*) (mapped_fileNum1+ stringTableNum1->sh_offset + sym->st_name);
-        int found = 1;//false
+        int found = 1;
+        
         if (strcmp("",symbol_name1 ) !=0)
         {
           if (sym->st_shndx == SHN_UNDEF) 
@@ -420,8 +432,7 @@ void CheckFilesForMerge(){
                     if (found == 1) 
                     {
                         printf("Symbol %s undefined\n",symbol_name1);
-                    }
-                
+                    }    
             }
             else 
             {
@@ -496,6 +507,7 @@ void MergeELFFiles()
     }
 
     FILE* unionRES = fopen("out.ro", "wb");
+    
     if (unionRES == NULL) 
     {
         fprintf(stderr, "Error: could not create output file. \n");
@@ -542,7 +554,7 @@ void MergeELFFiles()
         }
         else if (strcmp(comp, ".symtab") == 0) 
         {
-                //We not supporting in that part
+            
         } 
         else 
         {
@@ -565,8 +577,8 @@ void MergeELFFiles()
 }
 
 
-void Quit(){
-
+void Quit()
+{
     if (mapped_fileNum1!=NULL)
     {
         munmap(mapped_fileNum1,0);
