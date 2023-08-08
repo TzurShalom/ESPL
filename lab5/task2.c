@@ -80,7 +80,7 @@ void print_phdr_info(Elf32_Phdr *phdr, int arg)
     if (phdr->p_flags & PF_W) 
     {
         flags[1] = 'W';
-        if (coun == 1){protFlags=concatenateStrings(protFlags,OR);}
+        if (coun == 1) {protFlags=concatenateStrings(protFlags,OR);}
         protFlags=concatenateStrings(protFlags,W);
         coun++;
     }
@@ -90,7 +90,6 @@ void print_phdr_info(Elf32_Phdr *phdr, int arg)
         flags[2] = 'X';
         if (coun > 0){protFlags=concatenateStrings(protFlags,OR);}
         protFlags=concatenateStrings(protFlags,E);
-
     }
 
     if(phdr->p_type == PT_LOAD)
@@ -134,6 +133,7 @@ int main(int argc, char **argv)
     
     char *filename = argv[1];
     int fd = open(filename,O_RDWR);
+    
     if (fd == -1) 
     {
         perror("Error opening file.\n");
@@ -141,6 +141,7 @@ int main(int argc, char **argv)
     }
     
     struct stat file_stats;
+    
     if (fstat(fd, &file_stats) == -1) 
     {
         perror("Error getting file size.\n");
