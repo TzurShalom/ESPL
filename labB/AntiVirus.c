@@ -60,8 +60,7 @@ link* list_append(link* virus_list, virus* data)
     link->vir = data;
     link->nextVirus = NULL;
 
-    if (virus_list != NULL) 
-        {link->nextVirus = virus_list;}
+    if (virus_list != NULL) {link->nextVirus = virus_list;}
 
     return link;
 }
@@ -74,7 +73,6 @@ void list_free(link *virus_list)
     {
         link = virus_list;
         virus_list = virus_list->nextVirus;
-
         free(link->vir->sig);
         free(link->vir);
         free(link);
@@ -91,24 +89,19 @@ void free_viruses(char *fileName, link **virus_list_ptr)
 void file_format_test(char *fileName)
 {
     FILE * input = fopen(fileName,"r+");
-
     char format[4];
     fread(format,sizeof(char),sizeof(format),input);
-
     fclose(input);
-
     if (strcmp(format,"VISL") != 0) {printf("The magic number is incorrect\n"); exit(1);}
 }
 
 void load_viruses_to_list(char *fileName, link **virus_list_ptr)
 {
     file_format_test(fileName);
-
     FILE * input = fopen(fileName,"r+");
     fseek(input,4,SEEK_SET);
-
     virus * v;
-
+    
     while ((v = readVirus(input)) != NULL)
     {
         (*virus_list_ptr) = list_append((*virus_list_ptr),v);
@@ -142,18 +135,15 @@ void detect_viruses(char *fileName, link **virus_list_ptr)
     int length = fread(buffer,sizeof(char),10000,input);
     fclose(input);
     detect_virus(buffer,length,(*virus_list_ptr)); 
-    free(buffer);
-    
+    free(buffer);    
 }
 
 void neutralize_virus(char *fileName, int signatureOffset)
 {
     FILE * input = fopen(fileName,"r+");
     fseek(input,signatureOffset,SEEK_SET);
-
     char c[] = {0xC3};
     fwrite(c,sizeof(char),sizeof(c),input);
-
     fclose(input);
 }
 
@@ -200,29 +190,28 @@ int main(int argc, char **argv)
     while (fgets(c,4,stdin))
     {
         i = atoi(c);
-        if (!((1 <= i) & (i <= bound))) { 
-            exit(1);
-        }
-
+        if (!((1 <= i) & (i <= bound))) {exit(1);}
         if ( i==1 )
         {
             printf("Type a file name: ");
             fgets(fileName,256,stdin);
             sscanf(fileName,"%s",fileName);
         }
-        if (i==3 || i==4 ){
+        if (i==3 || i==4 )
+        {
             menu[i-1].fun(argv[1],&link);  
         }
-        else {
+        else 
+        {
             menu[i-1].fun(fileName,&link);
         }
       
         printf("\nDONE!\n");
-
         printf("\nPlease choose a function (ctrl^D for exit):\n");
+        
         for (int i = 1; i <= bound; i++) {printf("%i) %s\n",i,menu[i-1].name);}
+        
         printf("Option : ");
     }
-
     return 0;
 }
