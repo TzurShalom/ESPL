@@ -57,14 +57,14 @@ void execute(cmdLine *pCmdLine)
 
         if (pid > 0)
         {
-        if (pCmdLine->blocking == 1)
-        {
-            if (waitpid(pid,sta,0) == -1)
-            {
-                perror("the wait operation fails");
-                _exit(1);
-            }
-        }
+           if (pCmdLine->blocking == 1)
+           {
+               if (waitpid(pid,sta,0) == -1)
+               {
+                   perror("the wait operation fails");
+                   _exit(1);
+               }
+           }
         }    
         else if (pid == 0)
         {
@@ -121,7 +121,6 @@ void execute(cmdLine *pCmdLine)
 
 int main(int argc, char ** argv) 
 { 
-    printf("207107038_209483635\n");
    if ((argc > 1) && (strcmp(argv[1],"-d") == 0)) {debug = 1;}
 
    while (1)
@@ -137,7 +136,6 @@ int main(int argc, char ** argv)
 
       execute(cmdline);
       freeCmdLines(cmdline);
-   }
-   
+   }  
    return 0;
 }
