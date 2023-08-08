@@ -3,7 +3,9 @@
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
+
 //----------------------------------------------------------------------------------//
+
 typedef struct {
   char debug_mode;
   char file_name[128];
@@ -12,17 +14,22 @@ typedef struct {
   size_t mem_count;
   char display_flag;  
 } state;
+
 //----------------------------------------------------------------------------------//
+
 struct fun_desc {
 char *name;
 void (*fun)(state*);
 };
+
 //----------------------------------------------------------------------------------//
+
 void resetS(state *s){
     s->debug_mode ='0';
     s->unit_size = 1;
     s->display_flag = '0';
 }
+
 //----------------------------------------------------------------------------------//
 
 void ToggleDebugMode(state* s)
@@ -42,7 +49,6 @@ void ToggleDebugMode(state* s)
 
 void SetFileName(state* s)
 {
-
     char filename[100];
     printf("Please enter file name: ");
     fgets(filename, 100 ,stdin);
@@ -79,30 +85,36 @@ void LoadIntoMemory(state* s)
     char hexLocation[100];
     char lenght[100];
     unsigned int hexloca,decleng;
+  
     if (s->file_name[0]=='\0')
     {
         fprintf(stderr,"LoadIntoMemory: Error file name is empty.\n");
         return;
     }
+  
     int fd=open(s->file_name,O_RDWR);
     if(fd==-1)
     {
         fprintf(stderr,"LoadIntoMemory: Fails to open file: %s \n",s->file_name); 
         return;
     }
+  
     printf("Please enter <location> <length>: ");
     fgets(input, sizeof(input), stdin);
     sscanf(input, "%s %s", hexLocation, lenght);
     sscanf(hexLocation, "%x", &hexloca);
     sscanf(lenght, "%d", &decleng);
+  
     if (s->debug_mode == '1')
     {
         fprintf(stderr, "Debug: file name:%s, location:%x, length:%d ",s->file_name,hexloca,decleng );
     }
+  
     lseek(fd, hexloca, SEEK_SET);
     s->mem_count = s->unit_size * decleng;
     read(fd, s->mem_buf, s->unit_size * decleng);
     close(fd); 
+  
     if (s->debug_mode == '1')
     {
         fprintf(stderr, "Debug: file name:%s, location:%x, length:%d ",s->file_name,hexloca,decleng );
@@ -112,6 +124,7 @@ void LoadIntoMemory(state* s)
 void ToggleDisplayMode(state* s)
 {
     char displayFlag=s->display_flag;
+  
     if (displayFlag=='0') 
     {
         s->display_flag='1';
@@ -141,7 +154,9 @@ void MemoryDisplay(state* s)
         //starting from the start of the mem_buf
         addressHex=(unsigned int) s->mem_buf;
     }
+  
     size_t num_bytes = unitdec * s->unit_size;
+  
     if (s->display_flag=='1')
     {
         printf("Hexadecimal\n===========\n");
@@ -150,6 +165,7 @@ void MemoryDisplay(state* s)
     {
         printf("Decimal\n=======\n");
     }
+  
     unsigned int val;
     static char* hex_formats[] = {"%#hhx\n", "%#hx\n", "No such unit", "%#x\n"};
     static char* dec_formats[] = {"%#hhd\n", "%#hd\n", "No such unit", "%#d\n"};
@@ -257,7 +273,6 @@ void SaveIntoFile(state* s)
         fprintf(stderr,"target location: %x\n", targetLocation);
         fprintf(stderr,"length: %d\n", length);
     }
-
     close(fd);
 }
 
@@ -268,16 +283,19 @@ void MemoryModify(state* s)
     char hexLocation[100];
     char value[100];
     unsigned int hexloca,val;
+  
     if (s->file_name[0]=='\0')
     {
         fprintf(stderr,"LoadIntoMemory: Error file name is empty.\n");
         return;
     }
+  
     printf("Please enter <location> <val>: ");
     fgets(input, sizeof(input), stdin);
     sscanf(input, "%s %s", hexLocation, value);
     sscanf(hexLocation, "%x", &hexloca);
     sscanf(value, "%x", &val);
+  
     if (s->debug_mode == '1')
     {
         fprintf(stderr, "Debug: location:0x%x, val:%x ",hexloca,val );
@@ -292,6 +310,7 @@ void MemoryModify(state* s)
         printf("Error: Invalid location. The location exceeds the memory buffer size.\n");
         return;
     }
+  
     memcpy(&(s->mem_buf[hexloca]),&val,s->unit_size);
 }
 
@@ -301,6 +320,7 @@ void Quit(state* s)
     {
         fprintf(stderr, "Debug:quitting\n");
     }
+  
     exit(0);
 }
 //----------------------------------------------------------------------------------//
@@ -311,6 +331,7 @@ int main(int argc, char **argv)
   state *s=malloc(sizeof(state));
   resetS(s);
   char out[10];
+  
   struct fun_desc menu[] = { 
       { "Toggle Debug Mode", ToggleDebugMode },
       { "Set File Name ", SetFileName },
@@ -335,12 +356,14 @@ int main(int argc, char **argv)
     }
 
     printf("\nPlease choose a function from the menu:\n");
+    
     for( i=0; i < 9;i++)
     {
         printf("%d)",i);
         printf("%s",menu[i].name);
         printf("\n");
     }
+    
     printf("Option :");
 
     if (fgets(out,10,stdin)==NULL)
