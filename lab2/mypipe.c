@@ -3,7 +3,6 @@
 
 int main(int argc, char ** argv)
 {
-    printf("");
     int fd[2];
     if (pipe(fd) == -1) // creates a pipe and sets fd[0] as the read end and fd[1] as the write end
     {
