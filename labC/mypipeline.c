@@ -64,7 +64,6 @@ int main(int argc, char ** argv)
             
             fprintf(stderr,"parent_process > exiting\n");
         }
-    }
-    
+    }  
     return 0;
 }
