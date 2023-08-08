@@ -54,7 +54,6 @@ void execute(cmdLine *pCmdLine)
    {
         int * sta = NULL;
         int pid = fork();
-
         if (pid > 0)
         {
            if (pCmdLine->blocking == 1)
@@ -70,17 +69,14 @@ void execute(cmdLine *pCmdLine)
         {
             int input = -1;
             int output = -1;
-
             if (debug)
             {
                 fprintf(stderr,"PID : %i\n",getpid());
                 fprintf(stderr,"Executing command : %s\n",pCmdLine->arguments[0]);
             }
-
             if (pCmdLine->inputRedirect != NULL)
             {
                 input = open(pCmdLine->inputRedirect, O_RDWR | O_CREAT, 0777 );
-
                 if (input == -1)
                 {
                     perror("the open operation fails");
@@ -91,13 +87,10 @@ void execute(cmdLine *pCmdLine)
                     perror("the dup2 operation fails");
                     _exit(1);
                 }
-
             }
-
             if (pCmdLine->outputRedirect != NULL)
             {
                 output = open(pCmdLine->outputRedirect, O_RDWR | O_CREAT, 0777 );
-
                 if (output == -1)
                 {
                     perror("the open operation fails");
@@ -109,7 +102,6 @@ void execute(cmdLine *pCmdLine)
                     _exit(1);
                 }            
             }
-
             if (execvp(pCmdLine->arguments[0],pCmdLine->arguments) == -1) // Terminates the current process
             {
                 perror("the execv operation fails");
@@ -128,12 +120,9 @@ int main(int argc, char ** argv)
       char cwd[PATH_MAX];
       getcwd(cwd, sizeof(cwd));
       printf("%s ", cwd);
-
       char line[2048];
       fgets(line,sizeof(line),stdin);
-
       cmdLine *cmdline = parseCmdLines(line);
-
       execute(cmdline);
       freeCmdLines(cmdline);
    }  
