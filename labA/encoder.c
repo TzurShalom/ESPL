@@ -24,6 +24,7 @@ int main(int argc, char** argv)
       else if ((argv[i][0] == '-') & (argv[i][1] == 'i'))
       {
         if (debugFlag) {fprintf(errorFile,"%s\n",argv[i]);}
+          
         inputFile = fopen(argv[i]+2,"r");
      
         if (inputFile == NULL)
@@ -35,6 +36,7 @@ int main(int argc, char** argv)
       else if ((argv[i][0] == '-') & (argv[i][1] == 'o'))
       {
         if (debugFlag) {fprintf(errorFile,"%s\n",argv[i]);}
+          
         outputFile = fopen(argv[i]+2,"w");
       
         if (outputFile == NULL)
